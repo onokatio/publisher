@@ -8,16 +8,24 @@ import (
 func main(){
 	router := gin.Default()
 
-	router.GET("/",index)
-	router.Static("/assets/","./assets")
-	router.GET("/ping/:id",ping)
+	router.Static("/assets/","./static")
+	router.LoadHTMLGlob("templates/*.html")
+
+	router.GET("/",getIndex)
+	router.POST("/",postIndex)
+
+	router.GET("/content/:contentId",getContent)
 	router.Run() // listen and serve on 0.0.0.0:8080
 }
 
-func index(c *gin.Context) {
+func getIndex(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
 
-func ping(c *gin.Context) {
-	id := c.Param("id")
-	c.String(http.StatusOK, "message: pong" + id)
+func postIndex(c *gin.Context) {
+	c,PostForm("inputContent")
+}
+
+func getContent(c *gin.Context) {
+	contentiD := c.Param("contentiD")
 }
