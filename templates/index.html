@@ -11,22 +11,35 @@
 	<div class="container">
 		<h1 class="display-1">ぱぶりっしゃ〜</h1>
 
-		<p class="lead">「俺との連絡が途絶えて24時間経つと、例のデータが仲間に送信されるぞ」を実現します。</p>
+		<p class="lead my-5">「俺との連絡が途絶えて24時間経つと、例のデータが仲間に送信されるぞ」を実現します。</p>
 
-		<form method="post">
-			<div class="form-group">
-		 		<label for="inputContent">公開したいデータ</label>
-				<textarea class="form-control" id="inputContent" name="inputContent"></textarea>
+		<form method="post" class="py-5">
+			<div class="form-group row">
+		 		<label class="col-form-label col-sm" for="inputContent">公開したいデータ</label>
+				<textarea class="form-control col-sm" id="inputContent" name="inputContent" autofocus required></textarea>
 			</div>
 
-			<div class="form-group">
-				<label for="publishTime">公開したい日時</label>
-				<input id="publishTime" type="date" name="publishTime">
-				</input>
+			<div class="form-group row">
+				<label class="col-form-label col-sm">公開するまでの期間</label>
+
+				<select class="form-control col-sm-1" name="publishMonth">
+					<script>for(let i = 0; i <= 36 ; i++)document.write("<option>" + i + "</option>")</script>
+				</select>
+				<label class="col-form-label pr-3">ヶ月</label>
+
+				<select class="form-control col-sm-1" name="publishDays">
+					<script>for(let i = 0; i <= 31 ; i++)document.write("<option>" + i + "</option>")</script>
+				</select>
+				<label class="col-form-label pr-3">日</label>
+
+				<select class="form-control col-sm-1" name="publishHours">
+					<script>for(let i = 0; i <= 12 ; i++)document.write("<option>" + i + "</option>")</script>
+				</select>
+				<label class="col-form-label">時間後</label>
 			</div>
 
-			<div class="form-group">
-				<input class="form-contrtol" type="submit" value="送信" class="btn btn-primary">
+			<div class="form-group text-center">
+				<input class="form-contrtol" type="submit" value="Submit" class="btn btn-primary">
 			</div>
 
 		</form>
