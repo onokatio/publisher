@@ -35,7 +35,12 @@
 				<select class="form-control col-sm-1" name="publishHours">
 					<script>for(let i = 0; i <= 12 ; i++)document.write("<option>" + i + "</option>")</script>
 				</select>
-				<label class="col-form-label">時間後</label>
+				<label class="col-form-label">時間</label>
+
+				<select class="form-control col-sm-1" name="publishMinutes">
+					<script>for(let i = 0; i <= 59 ; i++)document.write("<option>" + i + "</option>")</script>
+				</select>
+				<label class="col-form-label">分後</label>
 			</div>
 
 			<div class="form-group text-center">
