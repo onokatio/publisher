@@ -1,7 +1,9 @@
 package main
 
 import (
+	"time"
 	"net/http"
+	"encoding/hex"
 	"crypto/sha256"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -10,16 +12,17 @@ import (
 
 type PostData struct {
 	inputContent string `form:"inputContent" binding:"required"`
-	publishMonth uint `form:"publishMonth" binding:"required"`
-	publishDays uint `form:"publishDays" binding:"required"`
-	publishHours uint `form:"publishHours" binding:"requirer"`
+	publishMonth int `form:"publishMonth" binding:"required"`
+	publishDays int `form:"publishDays" binding:"required"`
+	publishHours int `form:"publishHours" binding:"requirer"`
+	publishMinutes int `form:"publishMinutes" binding:"requirer"`
 }
 type DataList struct {
 	gorm.Model
-	Data string
-	Time uint
-	Hash string
-	Password string
+	data string
+	time int64
+	hash string
+	password string
 }
 
 func main(){
@@ -28,8 +31,7 @@ func main(){
 		panic("failed to connect database")
 	}
 	defer db.Close()
-	db.autoMigrate(&DataList{})
-	db.create
+	db.AutoMigrate(&DataList{})
 
 	router := gin.Default()
 
@@ -48,13 +50,22 @@ func getIndex(c *gin.Context) {
 }
 
 func postIndex(c *gin.Context) {
-	inputContent := c.PostForm("inputContent")
-	c.HTML(http.StatusOK, "complete.html", gin.H{
-		"inputContent" : inputContent,
-		"hash" : sha256.Sum256([]byte(inputContent)),
-		"publishTime" : 0,
-		"password" : "password",
-	})
+	var form PostData
+	err := c.ShouldBind(&form)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var data DataList
+	hash := sha256.Sum256([]byte(form.inputContent))
+	time := time.Now().Add(time.Hour * time.Duration(form.publishHours) + time.Minute * time.Duration(form.publishMinutes))
+	time = time.AddDate(0, form.publishMonth, form.publishDays)
+
+	data.data = form.inputContent
+	data.time = time.Unix()
+	data.hash = hex.EncodeToString(hash[:])
+	data.password = 
 }
 
 func getContent(c *gin.Context) {
