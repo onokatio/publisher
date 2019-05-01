@@ -16,13 +16,14 @@ type PostData struct {
 	publishDays int `form:"publishDays" binding:"required"`
 	publishHours int `form:"publishHours" binding:"requirer"`
 	publishMinutes int `form:"publishMinutes" binding:"requirer"`
+	password string `form:"password" binding:"requirer"`
 }
-type DataList struct {
+type ContentList struct {
 	gorm.Model
-	data string
-	time int64
-	hash string
-	password string
+	content string
+	contentHash string
+	publishTime int64
+	passwordHash string
 }
 
 func main(){
@@ -31,7 +32,7 @@ func main(){
 		panic("failed to connect database")
 	}
 	defer db.Close()
-	db.AutoMigrate(&DataList{})
+	db.AutoMigrate(&ContentList{})
 
 	router := gin.Default()
 
@@ -57,15 +58,20 @@ func postIndex(c *gin.Context) {
 		return
 	}
 
-	var data DataList
-	hash := sha256.Sum256([]byte(form.inputContent))
-	time := time.Now().Add(time.Hour * time.Duration(form.publishHours) + time.Minute * time.Duration(form.publishMinutes))
-	time = time.AddDate(0, form.publishMonth, form.publishDays)
+	var data ContentList
 
-	data.data = form.inputContent
-	data.time = time.Unix()
-	data.hash = hex.EncodeToString(hash[:])
-	data.password = 
+	contentHash := sha256.Sum256([]byte(form.inputContent))
+
+	publishTime := time.Now().Add(time.Hour * time.Duration(form.publishHours))
+	publishTime = publishTime.Add(time.Minute * time.Duration(form.publishMinutes))
+	publishTime = publishTime.AddDate(0, form.publishMonth, form.publishDays)
+
+	passwordHash := sha256.Sum256([]byte(form.password))
+
+	data.content = form.inputContent
+	data.publishTime = publishTime.Unix()
+	data.contentHash = hex.EncodeToString(contentHash[:])
+	data.passwordHash = hex.EncodeToString(passwordHash[:])
 }
 
 func getContent(c *gin.Context) {
