@@ -69,8 +69,8 @@ func postIndex(c *gin.Context) {
 	passwordHash := sha256.Sum256([]byte(form.password))
 
 	data.content = form.inputContent
-	data.publishTime = publishTime.Unix()
 	data.contentHash = hex.EncodeToString(contentHash[:])
+	data.publishTime = publishTime.Unix()
 	data.passwordHash = hex.EncodeToString(passwordHash[:])
 }
 
