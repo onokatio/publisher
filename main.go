@@ -1,12 +1,36 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"crypto/sha256"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+type PostData struct {
+	inputContent string `form:"inputContent" binding:"required"`
+	publishMonth uint `form:"publishMonth" binding:"required"`
+	publishDays uint `form:"publishDays" binding:"required"`
+	publishHours uint `form:"publishHours" binding:"requirer"`
+}
+type DataList struct {
+	gorm.Model
+	Data string
+	Time uint
+	Hash string
+	Password string
+}
+
 func main(){
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
+	db.autoMigrate(&DataList{})
+	db.create
+
 	router := gin.Default()
 
 	router.Static("/assets/","./static")
