@@ -15,29 +15,29 @@
 
 		<form method="post" class="py-5">
 			<div class="form-group row">
-		 		<label class="col-form-label col-sm" for="inputContent">公開したいデータ</label>
-				<textarea class="form-control col-sm" id="inputContent" name="inputContent" autofocus required></textarea>
+		 		<label class="col-form-label col-sm">公開したいデータ</label>
+				<textarea class="form-control col-sm" name="InputContent" autofocus required></textarea>
 			</div>
 
 			<div class="form-group row">
 				<label class="col-form-label col-sm">公開するまでの期間</label>
 
-				<select class="form-control col-sm-1" name="publishMonth">
+				<select class="form-control col-sm-1" name="PublishMonth">
 					<script>for(let i = 0; i <= 36 ; i++)document.write("<option>" + i + "</option>")</script>
 				</select>
 				<label class="col-form-label pr-3">ヶ月</label>
 
-				<select class="form-control col-sm-1" name="publishDays">
+				<select class="form-control col-sm-1" name="PublishDays">
 					<script>for(let i = 0; i <= 31 ; i++)document.write("<option>" + i + "</option>")</script>
 				</select>
 				<label class="col-form-label pr-3">日</label>
 
-				<select class="form-control col-sm-1" name="publishHours">
+				<select class="form-control col-sm-1" name="PublishHours">
 					<script>for(let i = 0; i <= 12 ; i++)document.write("<option>" + i + "</option>")</script>
 				</select>
 				<label class="col-form-label">時間</label>
 
-				<select class="form-control col-sm-1" name="publishMinutes">
+				<select class="form-control col-sm-1" name="PublishMinutes">
 					<script>for(let i = 0; i <= 59 ; i++)document.write("<option>" + i + "</option>")</script>
 				</select>
 				<label class="col-form-label">分後</label>
@@ -45,7 +45,7 @@
 
 			<div class="form-group row">
 				<label class="col-form-label col-sm">延命用パスワード</label>
-				<input class="form-control col-sm" name="password" type="text" required></textarea>
+				<input class="form-control col-sm" name="Password" type="text" required></textarea>
 			</div>
 
 			<div class="form-group text-center">
