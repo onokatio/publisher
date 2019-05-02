@@ -11,19 +11,19 @@ import (
 )
 
 type PostData struct {
-	inputContent string `form:"inputContent" binding:"required"`
-	publishMonth int `form:"publishMonth" binding:"required"`
-	publishDays int `form:"publishDays" binding:"required"`
-	publishHours int `form:"publishHours" binding:"requirer"`
-	publishMinutes int `form:"publishMinutes" binding:"requirer"`
-	password string `form:"password" binding:"requirer"`
+	InputContent string `form:"InputContent"`
+	PublishMonth int    `form:"PublishMonth"`
+	PublishDays int     `form:"PublishDays"`
+	PublishHours int    `form:"PublishHours"`
+	PublishMinutes int  `form:"PublishMinutes"`
+	Password string     `form:"Password"`
 }
 type ContentList struct {
 	gorm.Model
-	content string
-	contentHash string `gorm:"unique_index"`
-	publishTime time.Time
-	passwordHash string
+	Text string
+	ContentHash string `gorm:"unique_index"`
+	PublishTime time.Time
+	PasswordHash string
 }
 
 func main(){
@@ -51,8 +51,10 @@ func getIndex(c *gin.Context) {
 }
 
 func postIndex(c *gin.Context) {
+
 	var form PostData
 	err := c.ShouldBind(&form)
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -60,26 +62,36 @@ func postIndex(c *gin.Context) {
 
 	var content ContentList
 
-	contentHash := sha256.Sum256([]byte(form.inputContent))
+	contentHash := sha256.Sum256([]byte(form.InputContent))
 
-	publishTime := time.Now().Add(time.Hour * time.Duration(form.publishHours))
-	publishTime = publishTime.Add(time.Minute * time.Duration(form.publishMinutes))
-	publishTime = publishTime.AddDate(0, form.publishMonth, form.publishDays)
+	PublishTime := time.Now().UTC().Add(time.Hour * time.Duration(form.PublishHours))
+	PublishTime = PublishTime.Add(time.Minute * time.Duration(form.PublishMinutes))
+	PublishTime = PublishTime.AddDate(0, form.PublishMonth, form.PublishDays)
 
-	passwordHash := sha256.Sum256([]byte(form.password))
+	passwordHash := sha256.Sum256([]byte(form.Password))
 
-	content.content = form.inputContent
-	content.contentHash = hex.EncodeToString(contentHash[:])
-	content.publishTime = publishTime
-	content.passwordHash = hex.EncodeToString(passwordHash[:])
+	content.Text = form.InputContent
+	content.ContentHash = hex.EncodeToString(contentHash[:])
+	content.PublishTime = PublishTime
+	content.PasswordHash = hex.EncodeToString(passwordHash[:])
 
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
 		panic("failed to connect database")
 	}
 	defer db.Close()
-	db.Create(&content)
+	//db.Create(&content)
 
+	location, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	c.HTML(http.StatusOK, "complete.html", gin.H{
+		"Content": content.Text,
+		"Hash": content.ContentHash,
+		"PublishTime": content.PublishTime.In(location).String(),
+	})
 }
 
 func getContent(c *gin.Context) {
@@ -93,6 +105,4 @@ func getContent(c *gin.Context) {
 
 	var content ContentList
 	db.First(&content, "contentHash = ?", contentId)
-
-	c.HTML(http.StatusOK, "complete.html", gin.H{})
 }
