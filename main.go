@@ -21,8 +21,8 @@ type PostData struct {
 type ContentList struct {
 	gorm.Model
 	content string
-	contentHash string
-	publishTime int64
+	contentHash string `gorm:"unique_index"`
+	publishTime time.Time
 	passwordHash string
 }
 
@@ -58,7 +58,7 @@ func postIndex(c *gin.Context) {
 		return
 	}
 
-	var data ContentList
+	var content ContentList
 
 	contentHash := sha256.Sum256([]byte(form.inputContent))
 
@@ -68,12 +68,31 @@ func postIndex(c *gin.Context) {
 
 	passwordHash := sha256.Sum256([]byte(form.password))
 
-	data.content = form.inputContent
-	data.contentHash = hex.EncodeToString(contentHash[:])
-	data.publishTime = publishTime.Unix()
-	data.passwordHash = hex.EncodeToString(passwordHash[:])
+	content.content = form.inputContent
+	content.contentHash = hex.EncodeToString(contentHash[:])
+	content.publishTime = publishTime
+	content.passwordHash = hex.EncodeToString(passwordHash[:])
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
+	db.Create(&content)
+
 }
 
 func getContent(c *gin.Context) {
-	//contentiD := c.Param("contentiD")
+	contentId := c.Param("contentId")
+
+	db, err := gorm.Open("sqlite3", "test.db")
+	if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
+
+	var content ContentList
+	db.First(&content, "contentHash = ?", contentId)
+
+	c.HTML(http.StatusOK, "complete.html", gin.H{})
 }
