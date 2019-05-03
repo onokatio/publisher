@@ -2,11 +2,13 @@ package main
 
 import (
 	"time"
+	"fmt"
 	"net/http"
 	"encoding/hex"
 	"crypto/sha256"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/google/uuid"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
@@ -24,6 +26,7 @@ type ContentList struct {
 	ContentHash string `gorm:"unique_index"`
 	PublishTime time.Time
 	PasswordHash string
+	Uuid uuid.UUID
 }
 
 func main(){
@@ -50,16 +53,7 @@ func getIndex(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
 
-func postIndex(c *gin.Context) {
-
-	var form PostData
-	err := c.ShouldBind(&form)
-
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
+func PostData2ContentList(form PostData) ContentList {
 	var content ContentList
 
 	contentHash := sha256.Sum256([]byte(form.InputContent))
@@ -74,6 +68,24 @@ func postIndex(c *gin.Context) {
 	content.ContentHash = hex.EncodeToString(contentHash[:])
 	content.PublishTime = PublishTime
 	content.PasswordHash = hex.EncodeToString(passwordHash[:])
+
+	return content
+}
+
+func postIndex(c *gin.Context) {
+
+	var form PostData
+
+	err := c.ShouldBind(&form)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	content := PostData2ContentList(form)
+
+	id := uuid.New()
+	fmt.Println(id)
 
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
