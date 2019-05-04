@@ -2,7 +2,6 @@ package main
 
 import (
 	"time"
-	"fmt"
 	"net/http"
 	"encoding/hex"
 	"crypto/sha256"
@@ -23,10 +22,10 @@ type PostData struct {
 type ContentList struct {
 	gorm.Model
 	Text string
-	ContentHash string `gorm:"unique_index"`
+	ContentHash string
 	PublishTime time.Time
 	PasswordHash string
-	Uuid uuid.UUID
+	Uuid string `gorm:"unique_index"`
 }
 
 func main(){
@@ -56,6 +55,7 @@ func getIndex(c *gin.Context) {
 func PostData2ContentList(form PostData) ContentList {
 	var content ContentList
 
+
 	contentHash := sha256.Sum256([]byte(form.InputContent))
 
 	PublishTime := time.Now().UTC().Add(time.Hour * time.Duration(form.PublishHours))
@@ -64,6 +64,7 @@ func PostData2ContentList(form PostData) ContentList {
 
 	passwordHash := sha256.Sum256([]byte(form.Password))
 
+	content.Uuid = uuid.New().String()
 	content.Text = form.InputContent
 	content.ContentHash = hex.EncodeToString(contentHash[:])
 	content.PublishTime = PublishTime
@@ -84,30 +85,28 @@ func postIndex(c *gin.Context) {
 
 	content := PostData2ContentList(form)
 
-	id := uuid.New()
-	fmt.Println(id)
 
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
 		panic("failed to connect database")
 	}
 	defer db.Close()
-	//db.Create(&content)
+	db.Create(&content)
+
+	c.Redirect(http.StatusSeeOther,"/content/" + content.Uuid)
+}
+
+func getContent(c *gin.Context) {
+	Uuid, err := uuid.Parse(c.Param("contentId"))
+	if err != nil {
+		c.String(http.StatusNotFound, "UUID is invalid.")
+		return
+	}
 
 	location, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		panic(err.Error())
 	}
-
-	c.HTML(http.StatusOK, "complete.html", gin.H{
-		"Content": content.Text,
-		"Hash": content.ContentHash,
-		"PublishTime": content.PublishTime.In(location).String(),
-	})
-}
-
-func getContent(c *gin.Context) {
-	contentId := c.Param("contentId")
 
 	db, err := gorm.Open("sqlite3", "test.db")
 	if err != nil {
@@ -116,5 +115,24 @@ func getContent(c *gin.Context) {
 	defer db.Close()
 
 	var content ContentList
-	db.First(&content, "contentHash = ?", contentId)
+	result := db.Where("Uuid = ?", Uuid).First(&content)
+	if result.Error != nil {
+		c.String(http.StatusNotFound, "Content not found")
+		return
+	}
+
+	var Text string
+	if time.Now().After(content.PublishTime) {
+		Text = content.Text
+	} else {
+		Text = "データの公開期間を過ぎていません。"
+	}
+
+	c.HTML(http.StatusOK, "content.html", gin.H{
+		"Text" : Text,
+		"Now" : time.Now().In(location).String(),
+		"CreatedAt" : content.CreatedAt.In(location).String(),
+		"PublishTime": content.PublishTime.In(location).String(),
+	})
+
 }
